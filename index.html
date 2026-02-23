@@ -1,1 +1,199 @@
- a
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI App Builder Pro (Multi-Key System)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #ffffff; color: #000; overflow-x: hidden; }
+        .header { padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
+        .menu-icon { font-size: 30px; cursor: pointer; padding: 5px 15px; }
+        .container { display: flex; flex-direction: column; align-items: center; padding: 20px; text-align: center; }
+        
+        /* Input Box - Exact Border from your photo */
+        .input-box { 
+            width: 90%; max-width: 400px; height: 250px; 
+            border: 5px solid #000; border-radius: 8px; 
+            padding: 15px; font-size: 24px; color: #000; 
+            outline: none; resize: none; margin-top: 10px;
+            text-align: center;
+        }
+
+        .btn-submit { 
+            background: #ff1744; color: white; border: none; 
+            padding: 12px 40px; font-size: 35px; border-radius: 5px; 
+            cursor: pointer; margin-top: 50px; font-weight: bold; 
+        }
+
+        #loadingSection { display: none; margin-top: 30px; }
+        .loading-text { font-size: 28px; margin-bottom: 15px; color: #000; font-weight: 500; }
+        .clock-img { width: 100px; animation: spin 3s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #viewBtn { 
+            display: none; background: #ff1744; color: white; border: none; 
+            padding: 18px; font-size: 22px; border-radius: 5px; 
+            cursor: pointer; margin-top: 30px; width: 90%; max-width: 400px; 
+        }
+
+        #appViewer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; }
+        .viewer-header { background: #f8f9fa; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; }
+        .back-btn, .copy-btn { background: #e9ecef; border: 1px solid #adb5bd; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        iframe { width: 100%; height: calc(100% - 65px); border: none; }
+
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2500; top: 0; left: 0; background-color: #fff; overflow-x: hidden; transition: 0.4s; box-shadow: 2px 0 15px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; }
+        .project-item { padding: 15px 20px; border-bottom: 1px solid #eee; cursor: pointer; display: block; text-decoration: none; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">
+            <b style="font-size: 20px;">প্রজেক্টসমূহ</b>
+            <span style="font-size: 30px; cursor: pointer;" onclick="closeNav()">&times;</span>
+        </div>
+        <div id="projectList"></div>
+    </div>
+
+    <div class="header">
+        <div class="menu-icon" onclick="openNav()">☰</div>
+    </div>
+
+    <div class="container">
+        <textarea id="promptInput" class="input-box" placeholder="আপনার অ্যাপের আইডিয়া দিন"></textarea>
+        <button class="btn-submit" onclick="startGeneration()">জমা দিন</button>
+        
+        <div id="loadingSection">
+            <div class="loading-text">কিছুক্ষণ সময় লাগবে</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/3588/3588285.png" class="clock-img" alt="Loading">
+        </div>
+
+        <button id="viewBtn" onclick="showAppViewer()">দেখো তোমার অ্যাপ কেমন হয়েছে</button>
+    </div>
+
+    <div id="appViewer">
+        <div class="viewer-header">
+            <button class="back-btn" onclick="hideAppViewer()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
+            <b style="font-size: 18px;">প্রিভিউ</b>
+            <button class="copy-btn" onclick="copyToClipboard()"><i class="fas fa-copy"></i> Copy Code</button>
+        </div>
+        <iframe id="appFrame"></iframe>
+    </div>
+
+    <textarea id="tempCopyArea" style="position:absolute; left:-9999px;"></textarea>
+
+<script>
+    // আপনার দেওয়া ১০টি কি-এর লিস্ট
+    const API_KEYS = [
+        "AIzaSyDh2XwZVCAmx2j_I3XUUbVbxvsNjBh6-bo",
+        "AIzaSyAZxS96qGzOfY7ArAWtbacD_sOXUWJj_GE",
+        "AIzaSyCHSR0MSevBdMcwXGiWJ2FLtkgP3JK-7yk",
+        "AIzaSyBtXLHiRrgszcaYwb22h6QL_NPZ71UFHl4",
+        "AIzaSyCrIq7vhfSl1VDkUXdOUczSSt1Ns4NmO7M",
+        "AIzaSyDCnyPb7usnmga8urfT2tGh9PNPiT-gFx0",
+        "AIzaSyABbdvj37JaQQLsgEak-8wi7tX5yl3IRxo",
+        "AIzaSyDeUyTOaLytKPOZvCjcmNNR-upt74ELBb4",
+        "AIzaSyASd_XmASOz8Z9coJjQLtkk9VTQU2st3Tg",
+        "AIzaSyDm6GEuYM1tm9icVHgw1j8fUu6fa43qV0Q",
+        "AIzaSyAH2Jf3KC4YxU_rSm_jqyBkynQ62heKgYU"
+    ];
+
+    let lastGeneratedCode = ""; 
+
+    async function getWorkingKeyAndModel() {
+        for (let key of API_KEYS) {
+            try {
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+                const response = await fetch(listUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    let model = data.models?.find(m => m.name.includes("flash"))?.name;
+                    if (model) return { key, model };
+                }
+            } catch (e) { console.log("Key limit reached, trying next..."); }
+        }
+        return null;
+    }
+
+    async function startGeneration() {
+        const prompt = document.getElementById('promptInput').value;
+        if (!prompt) return alert("আইডিয়া লিখুন!");
+
+        document.getElementById('loadingSection').style.display = 'block';
+        document.getElementById('viewBtn').style.display = 'none';
+
+        const setup = await getWorkingKeyAndModel();
+        if (!setup) {
+            alert("দুঃখিত, সব কি-এর লিমিট শেষ!");
+            document.getElementById('loadingSection').style.display = 'none';
+            return;
+        }
+
+        try {
+            const genUrl = `https://generativelanguage.googleapis.com/v1beta/${setup.model}:generateContent?key=${setup.key}`;
+            const response = await fetch(genUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "Write only a single-file HTML/CSS/JS code for: " + prompt + ". No markdown symbols." }] }]
+                })
+            });
+
+            const data = await response.json();
+            let rawCode = data.candidates[0].content.parts[0].text;
+            lastGeneratedCode = rawCode.replace(/```html|```javascript|```css|```/g, "").trim();
+
+            saveToStorage(prompt, lastGeneratedCode);
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('viewBtn').style.display = 'block';
+
+        } catch (e) {
+            alert("আবার চেষ্টা করুন।");
+            document.getElementById('loadingSection').style.display = 'none';
+        }
+    }
+
+    function copyToClipboard() {
+        const tempArea = document.getElementById('tempCopyArea');
+        tempArea.value = lastGeneratedCode;
+        tempArea.select();
+        tempArea.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        alert("কোড কপি হয়েছে! ✅");
+    }
+
+    function showAppViewer() {
+        document.getElementById('appViewer').style.display = 'block';
+        const frame = document.getElementById('appFrame');
+        const doc = frame.contentWindow.document;
+        doc.open(); doc.write(lastGeneratedCode); doc.close();
+    }
+
+    function hideAppViewer() { document.getElementById('appViewer').style.display = 'none'; }
+    function openNav() { document.getElementById("mySidebar").style.width = "300px"; loadHistory(); }
+    function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
+
+    function saveToStorage(title, code) {
+        let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+        history.push({ title: title, code: code, date: new Date().toLocaleString() });
+        localStorage.setItem('app_history', JSON.stringify(history));
+    }
+
+    function loadHistory() {
+        const list = document.getElementById('projectList');
+        const history = JSON.parse(localStorage.getItem('app_history') || '[]');
+        list.innerHTML = history.length ? "" : "<p style='padding:20px;'>কোনো ইতিহাস নেই</p>";
+        history.reverse().forEach((item) => {
+            const div = document.createElement('div');
+            div.className = 'project-item';
+            div.innerHTML = `<b>${item.title.substring(0, 30)}...</b><br><small>${item.date}</small>`;
+            div.onclick = () => { lastGeneratedCode = item.code; showAppViewer(); closeNav(); };
+            list.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>
