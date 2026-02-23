@@ -3,95 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sadek AI App Builder (Auto-Link)</title>
+    <title>Sadek AI - Auto Smart Builder</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #ffffff; color: #000; text-align: center; }
-        .header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; font-size: 20px; }
-        .container { padding: 20px; }
-        .input-box { width: 90%; max-width: 400px; height: 150px; border: 3px solid #000; border-radius: 8px; padding: 10px; font-size: 18px; outline: none; }
-        .btn-submit { background: #ff1744; color: white; border: none; padding: 15px 30px; font-size: 20px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; width: 90%; max-width: 400px; }
-        #resultSection { display: none; margin-top: 30px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px dashed #ccc; }
-        .btn-link { background: #28a745; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%; }
-        #loading { display: none; margin-top: 20px; font-weight: bold; color: #ff1744; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; text-align: center; }
+        .header { background: #ffffff; padding: 20px; font-size: 22px; font-weight: bold; border-bottom: 3px solid #ff1744; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { padding: 25px 15px; max-width: 450px; margin: auto; }
+        .input-box { width: 100%; height: 150px; border: 2px solid #ddd; border-radius: 12px; padding: 15px; font-size: 18px; outline: none; box-sizing: border-box; transition: 0.3s; background: #fff; }
+        .input-box:focus { border-color: #ff1744; }
+        .btn-submit { background: #ff1744; color: white; border: none; padding: 15px; font-size: 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #loading { display: none; margin-top: 25px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #ff1744; border-radius: 50%; animation: spin 1s linear infinite; margin: auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #resultSection { display: none; margin-top: 25px; background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .link-display { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; background: #fafafa; color: #555; }
+        .btn-link { background: #28a745; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="header">Sadek AI App Builder</div>
+    <div class="header"><i class="fas fa-robot"></i> Sadek AI Smart Builder</div>
 
     <div class="container">
-        <textarea id="promptInput" class="input-box" placeholder="আপনার অ্যাপের আইডিয়া দিন (যেমন: Calculator)"></textarea><br>
-        <button class="btn-submit" onclick="generateAndDeploy()">অ্যাপ তৈরি করে লিঙ্ক নিন</button>
+        <textarea id="promptInput" class="input-box" placeholder="আপনার অ্যাপের আইডিয়া লিখুন..."></textarea>
+        <button class="btn-submit" onclick="generateApp()">অ্যাপ তৈরি ও লিঙ্ক নিন</button>
         
-        <div id="loading">লিঙ্ক তৈরি হচ্ছে, দয়া করে অপেক্ষা করুন...</div>
+        <div id="loading">
+            <div class="spinner"></div>
+            <p id="statusText" style="color: #ff1744; font-weight: bold; margin-top: 10px;">সচল কি (Key) খোঁজা হচ্ছে...</p>
+        </div>
 
         <div id="resultSection">
-            <p style="color: green; font-weight: bold;">অভিনন্দন! আপনার অ্যাপটি অনলাইনে তৈরি হয়ে গেছে।</p>
-            <input type="text" id="liveLink" readonly style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd;">
-            <button class="btn-link" onclick="copyLink()">লিঙ্ক কপি করুন</button>
-            <button class="btn-link" style="background:#007bff;" onclick="window.open(document.getElementById('liveLink').value)">সরাসরি ওপেন করুন</button>
+            <h3 style="color: #28a745;">সফলভাবে তৈরি হয়েছে! ✅</h3>
+            <p style="font-size: 14px; color: #666;">আপনার লাইভ অ্যাপ লিঙ্ক:</p>
+            <input type="text" id="liveLink" class="link-display" readonly>
+            <button class="btn-link" onclick="copyLink()"><i class="fas fa-copy"></i> লিঙ্ক কপি করুন</button>
+            <button class="btn-link" style="background:#007bff;" onclick="window.open(document.getElementById('liveLink').value)"><i class="fas fa-external-link-alt"></i> অ্যাপটি দেখুন</button>
         </div>
     </div>
 
 <script>
-    const GITHUB_TOKEN = "ghp_x2a1PVhbUkh8XhWuXdWoznj2L3A1M0eXKBJ"; // আপনার টোকেন
+    // আপনার তথ্য
+    const GITHUB_TOKEN = "ghp_x2a1PVhbUkh8XhWuXdWoznj2L3A1M0eXKBJ"; 
     const USERNAME = "jahanguralam62o-art";
     const REPO = "Sadek-Ai-";
 
-    async function generateAndDeploy() {
+    // আপনার দেওয়া ৫টি কি (Key) যা অটো চেক হবে
+    const API_KEYS = [
+        "AIzaSyDh2XwZVCAmx2j_I3XUUbVbxvsNjBh6-bo",
+        "AIzaSyAZxS96qGzOfY7ArAWtbacD_sOXUWJj_GE",
+        "AIzaSyCHSR0MSevBdMcwXGiWJ2FLtkgP3JK-7yk",
+        "AIzaSyBtXLHiRrgszcaYwb22h6QL_NPZ71UFHl4",
+        "AIzaSyCrIq7vhfSl1VDkUXdOUczSSt1Ns4NmO7M"
+    ];
+
+    async function generateApp() {
         const prompt = document.getElementById('promptInput').value;
         if (!prompt) return alert("আইডিয়া লিখুন!");
 
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('resultSection').style.display = 'none';
+        const loading = document.getElementById('loading');
+        const statusText = document.getElementById('statusText');
+        const resultSection = document.getElementById('resultSection');
+
+        loading.style.display = 'block';
+        resultSection.style.display = 'none';
+
+        let workingKey = null;
+        let generatedCode = "";
+
+        // ১. অটোমেটিক সচল কি (Key) খোঁজা এবং কোড তৈরি
+        for (let key of API_KEYS) {
+            try {
+                statusText.innerText = "কি চেক করা হচ্ছে...";
+                const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+                const response = await fetch(aiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Write only single-file HTML/CSS/JS code for: " + prompt + ". No markdown." }] }]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    workingKey = key;
+                    generatedCode = data.candidates[0].content.parts[0].text.replace(/```html|```javascript|```css|```/g, "").trim();
+                    break; // সচল কি পাওয়া গেলে লুপ বন্ধ হবে
+                }
+            } catch (e) { console.log("Key limit reached, trying next..."); }
+        }
+
+        if (!workingKey) {
+            loading.style.display = 'none';
+            return alert("দুঃখিত, সব কি-এর লিমিট শেষ! কাল আবার চেষ্টা করুন।");
+        }
+
+        // ২. GitHub-এ আপলোড করে লিঙ্ক তৈরি
+        statusText.innerText = "লিঙ্ক তৈরি করা হচ্ছে...";
+        const fileName = "app-" + Date.now() + ".html";
+        const uploadUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${fileName}`;
 
         try {
-            // ১. AI দিয়ে কোড তৈরি
-            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDh2XwZVCAmx2j_I3XUUbVbxvsNjBh6-bo`;
-            const aiRes = await fetch(aiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: "Write only a single-file HTML/CSS/JS code for: " + prompt + ". No markdown symbols." }] }] })
-            });
-            const aiData = await aiRes.json();
-            const generatedCode = aiData.candidates[0].content.parts[0].text.replace(/```html|```javascript|```css|```/g, "").trim();
-
-            // ২. GitHub-এ ফাইল আপলোড
-            const fileName = "app-" + Date.now() + ".html"; // প্রতিবার নতুন নাম হবে
-            const uploadUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${fileName}`;
-            
-            const uploadRes = await fetch(uploadUrl, {
+            const res = await fetch(uploadUrl, {
                 method: "PUT",
-                headers: {
-                    "Authorization": `token ${GITHUB_TOKEN}`,
-                    "Content-Type": "application/json"
-                },
+                headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: "New app created via Sadek Builder",
-                    content: btoa(unescape(encodeURIComponent(generatedCode))) // কোডকে এনকোড করা
+                    message: "New App: " + prompt,
+                    content: btoa(unescape(encodeURIComponent(generatedCode)))
                 })
             });
 
-            if (uploadRes.ok) {
-                const liveUrl = `https://${USERNAME}.github.io/${REPO}/${fileName}`;
-                document.getElementById('liveLink').value = liveUrl;
-                document.getElementById('resultSection').style.display = 'block';
+            if (res.ok) {
+                document.getElementById('liveLink').value = `https://${USERNAME}.github.io/${REPO}/${fileName}`;
+                resultSection.style.display = 'block';
+                document.getElementById('promptInput').value = "";
             } else {
-                alert("GitHub-এ ফাইল পাঠাতে সমস্যা হয়েছে।");
+                alert("GitHub আপলোড সমস্যা! টোকেন চেক করুন।");
             }
-        } catch (e) {
-            alert("আবার চেষ্টা করুন।");
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
+        } catch (e) { alert("Error: " + e.message); }
+        
+        loading.style.display = 'none';
     }
 
     function copyLink() {
-        const linkInput = document.getElementById('liveLink');
-        linkInput.select();
-        document.execCommand('copy');
-        alert("লিঙ্ক কপি হয়েছে! এখন বন্ধুদের পাঠান। ✅");
+        const copyText = document.getElementById("liveLink");
+        copyText.select();
+        document.execCommand("copy");
+        alert("লিঙ্ক কপি হয়েছে! ✅");
     }
 </script>
 
