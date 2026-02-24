@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sadek AI App Builder Pro (Live Link)</title>
+    <title>Sadek AI App Builder - Link Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #ffffff; color: #000; overflow-x: hidden; }
@@ -12,31 +12,29 @@
         .container { display: flex; flex-direction: column; align-items: center; padding: 20px; text-align: center; }
         
         .input-box { 
-            width: 90%; max-width: 400px; height: 200px; 
+            width: 90%; max-width: 400px; height: 250px; 
             border: 5px solid #000; border-radius: 8px; 
-            padding: 15px; font-size: 22px; color: #000; 
+            padding: 15px; font-size: 24px; color: #000; 
             outline: none; resize: none; margin-top: 10px;
             text-align: center;
         }
 
         .btn-submit { 
             background: #ff1744; color: white; border: none; 
-            padding: 12px 40px; font-size: 30px; border-radius: 5px; 
-            cursor: pointer; margin-top: 30px; font-weight: bold; width: 90%; max-width: 400px;
+            padding: 12px 40px; font-size: 35px; border-radius: 5px; 
+            cursor: pointer; margin-top: 50px; font-weight: bold; width: 90%; max-width: 400px;
         }
 
         #loadingSection { display: none; margin-top: 30px; }
-        .loading-text { font-size: 24px; margin-bottom: 15px; color: #000; font-weight: 500; }
-        .clock-img { width: 80px; animation: spin 3s linear infinite; }
+        .loading-text { font-size: 28px; margin-bottom: 15px; color: #000; font-weight: 500; }
+        .clock-img { width: 100px; animation: spin 3s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Result Section */
-        #resultSection { display: none; margin-top: 30px; width: 90%; max-width: 400px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
+        #resultSection { display: none; margin-top: 30px; width: 90%; max-width: 400px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 2px solid #ddd; }
         .live-link-input { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background: #fff; text-align: center; box-sizing: border-box; }
-        .btn-action { width: 100%; padding: 12px; font-size: 18px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; margin-bottom: 10px; color: white; }
-        .btn-copy { background: #28a745; }
-        .btn-open { background: #007bff; }
-
+        .btn-link-copy { background: #28a745; color: white; border: none; padding: 15px; font-size: 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px; }
+        
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2500; top: 0; left: 0; background-color: #fff; overflow-x: hidden; transition: 0.4s; box-shadow: 2px 0 15px rgba(0,0,0,0.1); }
         .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; }
     </style>
@@ -53,12 +51,11 @@
 
     <div class="header">
         <div class="menu-icon" onclick="openNav()">☰</div>
-        <b style="font-size: 20px; margin-left: 10px;">Sadek AI Smart Builder</b>
     </div>
 
     <div class="container">
         <textarea id="promptInput" class="input-box" placeholder="আপনার অ্যাপের আইডিয়া দিন"></textarea>
-        <button class="btn-submit" onclick="startProcess()">জমা দিন</button>
+        <button class="btn-submit" onclick="startGeneration()">জমা দিন</button>
         
         <div id="loadingSection">
             <div id="statusText" class="loading-text">কিছুক্ষণ সময় লাগবে</div>
@@ -66,32 +63,29 @@
         </div>
 
         <div id="resultSection">
-            <h3 style="color: #28a745; margin-top: 0;">সফলভাবে তৈরি হয়েছে! ✅</h3>
-            <p style="font-size: 14px; color: #555;">আপনার অ্যাপের লাইভ লিঙ্ক:</p>
+            <h3 style="color: #28a745;">তৈরি হয়ে গেছে! ✅</h3>
+            <p>নিচের লিঙ্কটি কপি করুন:</p>
             <input type="text" id="liveLink" class="live-link-input" readonly>
-            <button class="btn-action btn-copy" onclick="copyLink()"><i class="fas fa-link"></i> লিঙ্ক কপি করুন</button>
-            <button class="btn-action btn-open" onclick="window.open(document.getElementById('liveLink').value)"><i class="fas fa-external-link-alt"></i> অ্যাপটি দেখুন</button>
+            <button class="btn-link-copy" onclick="copyLink()">
+                <i class="fas fa-link"></i> লিঙ্ক কপি করুন
+            </button>
+            <button class="btn-link-copy" style="background:#007bff;" onclick="window.open(document.getElementById('liveLink').value)">
+                <i class="fas fa-external-link-alt"></i> অ্যাপটি দেখুন
+            </button>
         </div>
     </div>
 
 <script>
-    // আপনার কনফিগারেশন
+    // আপনার নতুন API Key এখানে যোগ করা হয়েছে
+    const API_KEYS = [
+        "AIzaSyDxPHfosY10mV1SEN75kX1u71QeanIvow4"
+    ];
+
     const GITHUB_TOKEN = "ghp_x2a1PVhbUkh8XhWuXdWoznj2L3A1M0eXKBJ"; 
     const USERNAME = "jahanguralam62o-art";
     const REPO = "Sadek-Ai-";
 
-    const API_KEYS = [
-        "AIzaSyA_c9V1Dhc3-OKhqvMXf_QvKN-NpeXq8qc",
-        "AIzaSyD73tiCoKhjyqNOGC-cNxY5o7y_y8ZF_S8",
-        "AIzaSyC8CXoRCfU4DZxNRzu4QEMKwbOX6edroY4",
-        "AIzaSyB892Go09EYqnEGXvqhjVl942hD9rRpdOc",
-        "AIzaSyC3o0f8JZM20IiVycS4P5au7udzk66tptQ",
-        "AIzaSyDi8si-BjfBlJJ6ZqTEkgkgjdBs51cqPjA",
-        "AIzaSyDMWAZIV40OIy53FYx-ERFgXz4cUCUuVjk",
-        "AIzaSyB7a0vw4e9gOK02P3lpZUCELlJCo_bpfWc"
-    ];
-
-    async function startProcess() {
+    async function startGeneration() {
         const prompt = document.getElementById('promptInput').value;
         if (!prompt) return alert("আইডিয়া লিখুন!");
 
@@ -101,63 +95,50 @@
 
         loading.style.display = 'block';
         result.style.display = 'none';
-        statusText.innerText = "সার্ভার চেক করা হচ্ছে...";
+        statusText.innerText = "কোড তৈরি হচ্ছে...";
 
         let generatedCode = "";
-        let workingKey = null;
-
-        // সচল কী (Key) খুঁজে কোড তৈরি করা
-        for (let key of API_KEYS) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "Write only single-file HTML/CSS/JS code for: " + prompt + ". No markdown symbols." }] }]
-                    })
-                });
-                const data = await response.json();
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    workingKey = key;
-                    generatedCode = data.candidates[0].content.parts[0].text.replace(/```html|```javascript|```css|```/g, "").trim();
-                    break;
-                }
-            } catch (e) { console.log("Key switching..."); }
-        }
-
-        if (!workingKey) {
-            loading.style.display = 'none';
-            return alert("সব কি-এর লিমিট শেষ! কাল চেষ্টা করুন।");
-        }
-
-        // GitHub-এ ফাইল আপলোড করে লিঙ্ক জেনারেট করা
-        statusText.innerText = "অনলাইনে লিঙ্ক তৈরি হচ্ছে...";
-        const fileName = "app-" + Math.random().toString(36).substring(7) + ".html";
-        const uploadUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${fileName}`;
+        let workingKey = API_KEYS[0];
 
         try {
+            const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${workingKey}`;
+            const response = await fetch(aiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "Write only single-file HTML/CSS/JS code for: " + prompt + ". No markdown." }] }]
+                })
+            });
+
+            const data = await response.json();
+            generatedCode = data.candidates[0].content.parts[0].text.replace(/```html|```javascript|```css|```/g, "").trim();
+
+            // GitHub-এ আপলোড করে লিঙ্ক তৈরি
+            statusText.innerText = "লিঙ্ক তৈরি করা হচ্ছে...";
+            const fileName = "app-" + Date.now() + ".html";
+            const uploadUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${fileName}`;
+
             const res = await fetch(uploadUrl, {
                 method: "PUT",
                 headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: "Deploying app: " + prompt,
+                    message: "Deploy: " + prompt,
                     content: btoa(unescape(encodeURIComponent(generatedCode)))
                 })
             });
 
             if (res.ok) {
-                const liveUrl = `https://${USERNAME}.github.io/${REPO}/${fileName}`;
-                document.getElementById('liveLink').value = liveUrl;
+                const finalUrl = `https://${USERNAME}.github.io/${REPO}/${fileName}`;
+                document.getElementById('liveLink').value = finalUrl;
                 loading.style.display = 'none';
                 result.style.display = 'block';
-                saveToHistory(prompt, liveUrl);
             } else {
                 alert("GitHub আপলোড সমস্যা!");
                 loading.style.display = 'none';
             }
+
         } catch (e) {
-            alert("Error: " + e.message);
+            alert("ভুল হয়েছে, আবার চেষ্টা করুন।");
             loading.style.display = 'none';
         }
     }
@@ -166,30 +147,11 @@
         const copyText = document.getElementById("liveLink");
         copyText.select();
         document.execCommand("copy");
-        alert("লিঙ্ক কপি হয়েছে! ✅");
+        alert("লিঙ্ক কপি করা হয়েছে! ✅");
     }
 
-    function openNav() { document.getElementById("mySidebar").style.width = "300px"; loadHistory(); }
+    function openNav() { document.getElementById("mySidebar").style.width = "300px"; }
     function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
-
-    function saveToHistory(title, url) {
-        let history = JSON.parse(localStorage.getItem('app_history_links') || '[]');
-        history.push({ title: title, url: url, date: new Date().toLocaleString() });
-        localStorage.setItem('app_history_links', JSON.stringify(history));
-    }
-
-    function loadHistory() {
-        const list = document.getElementById('projectList');
-        const history = JSON.parse(localStorage.getItem('app_history_links') || '[]');
-        list.innerHTML = history.length ? "" : "<p>কোনো ইতিহাস নেই</p>";
-        history.reverse().forEach((item) => {
-            const div = document.createElement('div');
-            div.style = "padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;";
-            div.innerHTML = `<b>${item.title.substring(0, 25)}...</b><br><small>${item.date}</small>`;
-            div.onclick = () => { window.open(item.url); };
-            list.appendChild(div);
-        });
-    }
 </script>
 
 </body>
